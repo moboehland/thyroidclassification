@@ -1,0 +1,2 @@
+The best Nikiforov Network is a ResNet101 with standard augmentation.
+The best repetition of each split has been extracted from the lightning_logs created during training of the networks.

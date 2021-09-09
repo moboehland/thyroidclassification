@@ -1,0 +1,14 @@
+results
+lightning_logs
+datasets
+*.tif
+*.tiff
+*.png
+*.jpg
+__pycache__
+*.zip
+*.ckpt
+*.xml
+*.h5
+*.xlsx
+.vscode

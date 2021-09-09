@@ -1,0 +1,2 @@
+The best Tharun and Thompson network is a ResNet101 with big augmentation.
+The best repetition of each split has been extracted from the lightning_logs created during training of the networks.
