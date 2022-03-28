@@ -1,19 +1,16 @@
-from albumentations.augmentations import domain_adaptation
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from argparse import ArgumentParser
 from classification_nets import get_classification_net
-import torchvision.transforms as transforms
 from utils import accuracy_topk
-from image_folder_with_splits_dataset import ImageFolderSplits as ClassificationDataset
+from thyroid_dataset import ThyroidDataset as ClassificationDataset
 from pathlib import Path
-import hjson
 import pandas as pd
 import numpy as np
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from albumentations_mixup import Mixup, mixup_loss
+from albumentations_mixup import Mixup
 import random
 
 
@@ -25,7 +22,7 @@ class ClassificationModule(pl.LightningModule):
                  pretrained=True,
                  batch_size=32,
                  num_workers=0,
-                 data_path="",
+                 dataset_folder="",
                  learning_rate=0.001,
                  lr_patience=25,
                  lr_reduce_factor=0.5,
@@ -42,16 +39,14 @@ class ClassificationModule(pl.LightningModule):
     def add_model_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
         # network params
-        parser.add_argument('--net', default="resnet50", type=str, help="Net architecture to use") #  resnet101
+        parser.add_argument('--net', default="resnet50", type=str, help="Net architecture to use")
         parser.add_argument('--classes', default=2, type=int, help="Number of output classes")
         parser.add_argument('--pretrained', default=False, action="store_true", help="Enable using pretrained models.")
         # dataloader params
-        parser.add_argument('--batch_size', default=32, type=int)  #resnet50 32
+        parser.add_argument('--batch_size', default=32, type=int)
         parser.add_argument('--num_workers', default=16, type=int)
         # dataset params
-        parser.add_argument('--data_path', default=Path(__file__).parent.joinpath("..", "datasets", "TharunThompson").resolve(), type=str, help="Path to dataset in ImageFolder format.")
         parser.add_argument('--class_imbalance_threshold', default=100, type=int, help="Maximal allowed class imbalance in dataset in percent. If <100 samples in small classes are picked multiple times for dataset. Only applied for trainind data (not val/test).")
-        parser.add_argument('--oversample', default=1, type=int, help="Number of times each class is oversampled during training and validation.")
         parser.add_argument('--sliding_window', default=0, type=int, help="size of sliding window (rectangle) to use for the dataset.")
         # optimizer params
         parser.add_argument('--learning_rate', default=0.001, type=float, help="Learning rate of optimizer. Will only be used if use_lr_finder is not set.")
@@ -131,7 +126,7 @@ class ClassificationModule(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def train_dataloader(self):
-        # Luebeck Dataset:
+        # TharunThompson Dataset:
         # Training-means: 0.6541, 0.4286, 0.6997
         # Training-stds:  0.1614, 0.1608, 0.1187
         # pytorch mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225
@@ -159,7 +154,7 @@ class ClassificationModule(pl.LightningModule):
                 ToTensorV2()
             ])
         elif self.hparams.augmentation == "fda":
-            dataset = ClassificationDataset(self.hparams.data_path, self.hparams.split["train"],
+            dataset = ClassificationDataset(self.hparams.dataset_folder, self.hparams.split["train"],
                                             class_imbalance_threshold=self.hparams.class_imbalance_threshold)
             fda_image_paths = [sample[0] for sample in dataset.samples]
             trans = A.Compose([
@@ -177,7 +172,7 @@ class ClassificationModule(pl.LightningModule):
                 ToTensorV2()
             ])
         elif self.hparams.augmentation == "mixup":
-            dataset = ClassificationDataset(self.hparams.data_path, self.hparams.split["train"],
+            dataset = ClassificationDataset(self.hparams.dataset_folder, self.hparams.split["train"],
                                             class_imbalance_threshold=self.hparams.class_imbalance_threshold)
             mixups = [sample[0:2] for sample in dataset.samples]
             trans = A.Compose([
@@ -200,8 +195,8 @@ class ClassificationModule(pl.LightningModule):
         else:
             raise ValueError("Augmentation unknown")
 
-        dataset = ClassificationDataset(self.hparams.data_path, self.hparams.split["train"], transform=trans,
-                                        class_imbalance_threshold=self.hparams.class_imbalance_threshold, oversample=self.hparams.oversample)
+        dataset = ClassificationDataset(self.hparams.dataset_folder, self.hparams.split["train"], transform=trans,
+                                        class_imbalance_threshold=self.hparams.class_imbalance_threshold)
         train_loader = torch.utils.data.DataLoader(dataset, batch_size=self.hparams.batch_size, shuffle=True, num_workers=self.hparams.num_workers, worker_init_fn=self.seed_worker)  #, worker_init_fn=self.seed_worker
         return train_loader
 
@@ -211,7 +206,7 @@ class ClassificationModule(pl.LightningModule):
             A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             ToTensorV2()
         ])
-        dataset = ClassificationDataset(self.hparams.data_path, self.hparams.split["val"], transform=trans,
+        dataset = ClassificationDataset(self.hparams.dataset_folder, self.hparams.split["val"], transform=trans,
                                         sliding_window=self.hparams.sliding_window)
         if (self.hparams.crop_val <= 0) & (self.hparams.sliding_window <= 0):
             # images are not cropped and no sliding_window is applied batch size has to be one since not all images have the same size
@@ -227,8 +222,7 @@ class ClassificationModule(pl.LightningModule):
             A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             ToTensorV2()
         ])
-        dataset = ClassificationDataset(self.hparams.data_path, self.hparams.split["test"], transform=trans,
-                                        print_class_to_idx=True, sliding_window=self.hparams.sliding_window)
+        dataset = ClassificationDataset(self.hparams.dataset_folder, self.hparams.split["test"], transform=trans, sliding_window=self.hparams.sliding_window)
         test_loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=self.hparams.num_workers)
         return test_loader
 

@@ -26,12 +26,9 @@ class SegModule(pl.LightningModule):
         self.loss = get_loss()
 
     @staticmethod
-    def add_model_specific_args(parent_parser, root_dir):
+    def add_model_specific_args(parent_parser):
         """
         Parameters you define here will be available to your model through self.hparams
-        :param parent_parser:
-        :param root_dir:
-        :return:
         """
         parser = ArgumentParser(parents=[parent_parser])
         # network params
@@ -42,24 +39,16 @@ class SegModule(pl.LightningModule):
         parser.add_argument('--filters_first_conv', default=64, type=int, help="Number of filters in first convolutional block")
         parser.add_argument('--filters_last_conv', default=1024, type=int, help="Number of filters in last convolutional block")
 
-        # use 500 for CPU, 50000 for GPU to see speed difference
         parser.add_argument('--learning_rate', default=8e-4, type=float)
         parser.add_argument('--learning_rate_patience', default=9, type=int)
 
-        # data
-        #parser.add_argument('--data_root', default=os.path.join(root_dir, 'mnist'), type=str)
-
         # training params (opt)
-        #parser.add_argument('--loss', default="ce_dice", type=str)
         parser.add_argument('--optimizer', default='adam', type=str)
         parser.add_argument('--transforms', default='combo', type=str, help="Training data transformations.")
         parser.add_argument('--batch_size', default=6, type=int)
-        parser.add_argument('--num_workers', default=0, type=int)
+        parser.add_argument('--num_workers', default=12, type=int)
 
         parser.add_argument('--dataset_iter', default=1, type=int, help="How often should each image be in training dataset.")
-
-        #parser.add_argument('--batch_size', default=4, type=int)
-        #parser.add_argument('--patch_size', default=(1, 512, 512), type=int)
         return parser
 
     # forward pass through the network

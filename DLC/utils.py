@@ -1,14 +1,7 @@
 import torch
-import torch.nn as nn
 from torchvision import datasets
 import torchvision.transforms as transforms
-from sklearn.model_selection import StratifiedKFold
-import pandas as pd
-from pathlib import Path
 import numpy as np
-import shutil
-import hjson
-
 
 def find_means():
     trans = transforms.ToTensor()
@@ -21,7 +14,6 @@ def find_means():
     mean = means.mean(0)
     std = stds.mean(0)
     return mean, std
-
 
 def accuracy_topk(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -38,7 +30,6 @@ def accuracy_topk(output, target, topk=(1,)):
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
-
 
 def get_paths(folder, suffix):
     image_paths = []

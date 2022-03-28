@@ -10,7 +10,7 @@ from albumentations.pytorch import ToTensorV2
 import re
 import sys
 sys.path.append(str(Path(__file__).parents[1].joinpath("DLC")))
-from classification_module import ClassificationModule
+from DLC import ClassificationModule
 
 """ Script to evaluate the performance of the best feature based classification pipeline trained on one dataset evaluated on another dataset
 The direction (TtoN or NtoT) and the paths to the corresponding trained networks need to be set manually. 

@@ -11,11 +11,10 @@ def augmentors(augmentation, min_value=0, max_value=255, label_type=None):
                             albu.RandomScale(scale_limit=0.2, p=0.3),
                             albu.Rotate(limit=180, p=0.3),
                             albu.OneOf([albu.CLAHE(p=0.5),
-                                        albu.RandomContrast(p=0.5),
-                                       albu.RandomBrightnessContrast(p=0.5),
-                                       albu.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=10, p=1)], p=0.5),  #0.3
-                            albu.OneOf([albu.IAAPerspective(p=0.5),
-                                        albu.IAAPiecewiseAffine(p=0.5, order=0)], p=0.5),  #0.25
+                                        albu.RandomBrightnessContrast(p=0.5),
+                                        albu.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=10, p=1)], p=0.5),  #0.3
+                            albu.OneOf([albu.Perspective(p=0.5),
+                                        albu.PiecewiseAffine(p=0.5, interpolation=0)], p=0.5),  #0.25
                             albu.RandomCrop(384, 384, p=1),
                             albu.Blur(p=0.25),  # 0.25
                             albu.GaussNoise(p=0.25),  # 0.25
