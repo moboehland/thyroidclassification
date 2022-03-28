@@ -12,7 +12,7 @@ from scipy.ndimage.morphology import distance_transform_edt
 
 """ Extract features from a dataset
 
-Specify the path do the dataset in dataset_folder
+Specify the path to the dataset in dataset_folder
 """
 
 IMG_EXTENSIONS = ['.jpg', '.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP', '.tiff',

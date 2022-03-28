@@ -6,18 +6,16 @@ from pathlib import Path
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 """ Training script for the segmentation network on the MoNuSeg Challenge data
+See README.md for instructions
+
 The final model has been trained with the following hyperparameters different from the standard hyperparameters
 --filters_last_conv 2048
---num_workers 12
-
 
 Our final model has a val_loss of 1.21. It is possible that you need to train several networks with the same hyperparameter settings to achieve this.
 Trained models are saved to results/EXPERIMENT_VERSION/*.ckpt. Tensorboard logs during training are saved to lightning_logs/EXPERIMENT/VERSION.
 
 To train the model on the MoNuSeg Challenge data, the directory needs to be given using the argument parser (e.g.: --root_dir ../datasets/MoNuSeg)
 """
-
-
 
 def main(hparams):
     # ------------------------
@@ -76,13 +74,11 @@ def main(hparams):
     trainer.fit(model)
 
 
-if __name__ == '__main__':
-    root_dir_default = "datasets/MoNuSeg"
-   
+if __name__ == '__main__':  
     parent_parser = ArgumentParser(add_help=False)
-    parent_parser.add_argument("--root_dir", type=str, default=root_dir_default, help="path where dataset is stored")
+    parent_parser.add_argument("--root_dir", type=str, default="datasets/MoNuSeg", help="path where dataset is stored")
     parent_parser.add_argument("--experiment", default="test_experiment", type=str, help="Name of the experiment.")
     parent_parser.add_argument("--early_stop", default=25, type=int, help="Epochs without better val_loss before ending training.")
-    parser = SegModule.add_model_specific_args(parent_parser, root_dir_default)
+    parser = SegModule.add_model_specific_args(parent_parser)
     hparams = parser.parse_args()
     main(hparams)

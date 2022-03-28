@@ -24,6 +24,7 @@ from skrebate import SURF
 import json
 
 
+
 class ClassifierHparamOptimizer():
 
     def __init__(self, Classifier, class_hparams, data_preproc_hparams, n_splits_outer, n_splits_inner):
@@ -67,7 +68,7 @@ class ClassifierHparamOptimizer():
                 # Calculate supporting features and afterwards train classifier for each hyperparameter combination
                 clf = self.Classifier(**p)
 
-                print(f"Len feature_selection vor sfs: {len(features_inner)}")
+                print(f"Len feature_selection before sfs: {len(features_inner)}")
 
                 features_inner_selected = self.select_features(clf, train[features_inner], train[feature_target],
                                                                self.data_preproc_hparams.feature_selection_num_features)  # fit classifier with or without feature selection methods (sfs/rfe)
@@ -101,7 +102,7 @@ class ClassifierHparamOptimizer():
                         break
                 assert class_hparams != "", "Classification hyperparameter combination could not be found!"
                 clf = self.Classifier(**class_hparams)
-                print(f"Len feature_selection vor sfs: {len(features_inner)}")
+                print(f"Len feature_selection before sfs: {len(features_inner)}")
                 features_selected = self.select_features(clf, train[features_inner], train[feature_target], n_features)  # returns a list with 1 element for scalar n_features
                 clf.fit(train[features_selected[0]], train[feature_target])
                 acc_train = clf.score(train[features_selected[0]], train[feature_target])
@@ -239,27 +240,35 @@ class ClassifierHparamOptimizer():
 
 def create_classifiers(hparams, n_splits_outer, n_splits_inner):
     classifiers = {}
-    svc_params = {"random_state": [0], "kernel": ["rbf", "poly"], "C": [0.5, 1.0, 2.0], "cache_size": [1000]}  # "kernel": ["linear", "poly", "rbf", "sigmoid"] , "C": [0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5, 3.0]
-    classifiers["svc"] = ClassifierHparamOptimizer(SVC, svc_params, hparams, n_splits_outer, n_splits_inner)
 
-    #knn_params = {"n_neighbors": [2, 5, 10], "algorithm": ["ball_tree", "kd_tree"], "leaf_size": [15, 30, 60]}  #[2, 3, 5, 8, 10], ["ball_tree", "kd_tree"] leaf [5, 10, 20, 30, 50]
-    #classifiers["knn"] = ClassifierHparamOptimizer(KNeighborsClassifier, knn_params, hparams, n_splits_outer, n_splits_inner)
+    if "svc" in hparams.classifiers:
+        svc_params = {"random_state": [0], "kernel": ["rbf", "poly"], "C": [0.5, 1.0, 2.0], "cache_size": [1000], "gamma": ["auto"]}  # "kernel": ["linear", "poly", "rbf", "sigmoid"] , "C": [0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5, 3.0]
+        classifiers["svc"] = ClassifierHparamOptimizer(SVC, svc_params, hparams, n_splits_outer, n_splits_inner)
 
-    #gnb_params = {}
-    #classifiers["gnb"] = ClassifierHparamOptimizer(GaussianNB, gnb_params, hparams, n_splits_outer, n_splits_inner)
+    if "knn" in hparams.classifiers:
+        knn_params = {"n_neighbors": [2, 5, 10], "algorithm": ["ball_tree", "kd_tree"], "leaf_size": [15, 30, 60]}  #[2, 3, 5, 8, 10], ["ball_tree", "kd_tree"] leaf [5, 10, 20, 30, 50]
+        classifiers["knn"] = ClassifierHparamOptimizer(KNeighborsClassifier, knn_params, hparams, n_splits_outer, n_splits_inner)
 
-    #dt_params = {"random_state": [0]}
-    #classifiers["dt"] = ClassifierHparamOptimizer(DecisionTreeClassifier, dt_params, hparams, n_splits_outer, n_splits_inner)
+    if "gnb" in hparams.classifiers:
+        gnb_params = {}
+        classifiers["gnb"] = ClassifierHparamOptimizer(GaussianNB, gnb_params, hparams, n_splits_outer, n_splits_inner)
 
-    #logreg_params = {"random_state": [0], "C": [0.5, 1.0, 2.0], "max_iter": [1000]}  # "C": [0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0]
-    #classifiers["logreg"] = ClassifierHparamOptimizer(LogisticRegression, logreg_params, hparams, n_splits_outer, n_splits_inner)
+    if "dt" in hparams.classifiers:
+        dt_params = {"random_state": [0]}
+        classifiers["dt"] = ClassifierHparamOptimizer(DecisionTreeClassifier, dt_params, hparams, n_splits_outer, n_splits_inner)
 
-    #rf_params = {"random_state": [0], "n_estimators": [2, 5, 10, 50, 100, 200]}
-    #classifiers["rf"] = ClassifierHparamOptimizer(RandomForestClassifier, rf_params, hparams, n_splits_outer, n_splits_inner)
+    if "logreg" in hparams.classifiers:
+        logreg_params = {"random_state": [0], "C": [0.5, 1.0, 2.0], "max_iter": [1000]}  # "C": [0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0]
+        classifiers["logreg"] = ClassifierHparamOptimizer(LogisticRegression, logreg_params, hparams, n_splits_outer, n_splits_inner)
 
-    #xgb_params = {'booster': ['gbtree'], 'objective': ["reg:squarederror"], 'eta': [0.3, 0.5, 0.8], 'gamma': [0, 0.5, 1.0],
-    #              'max_depth': [2, 6], 'lambda': [1, 1.5, 2.0], 'alpha': [0, 0.1, 0.5]}  #, "binary:logistic"
-    #classifiers["xgb"] = ClassifierHparamOptimizer(xgb.XGBClassifier, xgb_params, hparams, n_splits_outer, n_splits_inner)
+    if "rf" in hparams.classifiers:
+        rf_params = {"random_state": [0], "n_estimators": [2, 5, 10, 50, 100, 200]}
+        classifiers["rf"] = ClassifierHparamOptimizer(RandomForestClassifier, rf_params, hparams, n_splits_outer, n_splits_inner)
+
+    if "xgb" in hparams.classifiers:
+        xgb_params = {'booster': ['gbtree'], 'objective': ["reg:squarederror"], 'eta': [0.3, 0.5, 0.8], 'gamma': [0, 0.5, 1.0],
+                      'max_depth': [2, 6], 'lambda': [1, 1.5, 2.0], 'alpha': [0, 0.1, 0.5]}  #, "binary:logistic"
+        classifiers["xgb"] = ClassifierHparamOptimizer(xgb.XGBClassifier, xgb_params, hparams, n_splits_outer, n_splits_inner)
 
     return classifiers
 
@@ -320,7 +329,7 @@ def main(hparams):
     classifiers = create_classifiers(hparams, n_splits_outer, n_splits_inner)
 
 
-    measures = data_loader(hparams.features_folder)  # , patients=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,19,20]
+    measures = data_loader(hparams.features_folder)  # , patients=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,19,20,21,25,26,28]
     group_data(measures, hparams.diagnose_groups)
     measures, feature_selection_agg = aggregate_to_patient(measures, hparams.feature_selection_initial, hparams.diagnose_selection)
 
@@ -415,6 +424,7 @@ if __name__ == '__main__':
     parser.add_argument("--results_folder_name", type=str, default="test", help="Folder name for all files written.")
     parser.add_argument("--quantile_transform", default=False, action='store_true', help="Use quantile transformation on dataset.")
     parser.add_argument("--scaler", type=str, default="none", help="Scaler std or none (std: standard scaler)")
+    parser.add_argument("--classifiers", type=str, nargs="+", default=["svc", "knn", "gnb", "dt", "logreg", "rf"])
     hparams = parser.parse_args()
 
     hparams.feature_selection_initial = feature_selection_initial

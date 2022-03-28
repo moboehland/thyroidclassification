@@ -8,7 +8,7 @@ Deep learning-based classification results are directly obtained by training of 
 
 To reproduce the paper results, the following steps need to be performed:
 1) Download and preprocess the MoNuSeg Challenge data. See segmentation/prepare_MoNuSeg.py for instructions.
-2) Train the segmentation network on the MoNuSeg Challenge data. See segmentation/trainer.py for instructions.
-3) Use the trained model for inference on the Nikiforov and Tharun & Thompson dataset. See segmentation/inference for instructions.
-4) For the Feature-based classification see the README.md in the FBC folder.
-5) Perform the deep learning-based classification with the classification_module.py in the DLC folder.
+2) Train the segmentation network on the MoNuSeg Challenge data. See segmentation/README.md for instructions.
+3) Use the trained model for inference on the Nikiforov and Tharun & Thompson dataset. See segmentation/README.md for instructions.
+4) For the Feature-based classification see FBC/README.md for instructions.
+5) Perform the deep learning-based classification with the classification_module.py in the DLC folder. See DLC/Readme.md for Instructions
