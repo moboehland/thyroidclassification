@@ -435,6 +435,8 @@ if __name__ == '__main__':
     elif hparams.features_folder == "N":
         hparams.features_folder = features_folder_N
         hparams.diagnose_groups = diagnose_groups_N
+    else:
+        raise ValueError("Please manually define hparams.diagnose_groups for custom datasets (--features_folder not 'T' or 'N').")
 
     hparams.feature_selection_num_features = np.arange(1, hparams.feature_selection_num_features+1)
 

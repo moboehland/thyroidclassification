@@ -17,7 +17,8 @@ def get_paths(folder, suffix):
 
 def data_loader(folder, split=None, patients=None):
     paths = sorted(Path(folder).glob("*.h5"))
-    #paths = get_paths(folder, ".h5")
+    if paths == []:
+        ValueError(f"No measurements (features) found in {folder}")
     measures_all = pd.DataFrame()
     for idx, path in enumerate(paths):
         if patients is not None and not int(path.name.split("_")[0]) in patients:
