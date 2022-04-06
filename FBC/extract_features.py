@@ -7,7 +7,7 @@ from skimage.measure import regionprops, regionprops_table, shannon_entropy
 import pandas as pd
 from scipy.spatial import distance
 import re
-from skimage.feature import greycomatrix, greycoprops
+from skimage.feature import graycomatrix, graycoprops
 from scipy.ndimage.morphology import distance_transform_edt
 
 """ Extract features from a dataset
@@ -155,16 +155,16 @@ def extract_cell_features(image, label, measures, image_path, instance_path):
 
 
 def get_glcm_features(cell, angles = [0, np.pi/4, np.pi/2, 3*np.pi/4], distances = [1,2], properties = ['dissimilarity', 'correlation', 'energy', 'homogeneity']):
-    glcm = greycomatrix(cell, 
+    glcm = graycomatrix(cell, 
                     distances=distances,
                     angles=angles,
                     symmetric=True,
                     normed=True)   
-    feats = np.hstack([greycoprops(glcm, prop).ravel() for prop in properties])  # ravel => flatten array hstack => list of arrays to array
+    feats = np.hstack([graycoprops(glcm, prop).ravel() for prop in properties])  # ravel => flatten array hstack => list of arrays to array
 
     # create features for merged angles (sum)
-    glcm_angle_sum = np.expand_dims(np.sum(glcm, axis=3), 2)  # 3rd dimension (angles) is needed for greycoprops
-    feats_angle_sum = np.hstack([greycoprops(glcm_angle_sum, prop).ravel() for prop in properties])
+    glcm_angle_sum = np.expand_dims(np.sum(glcm, axis=3), 2)  # 3rd dimension (angles) is needed for graycoprops
+    feats_angle_sum = np.hstack([graycoprops(glcm_angle_sum, prop).ravel() for prop in properties])
     return np.concatenate([feats, feats_angle_sum], axis=0)
 
 def extract_distance_nearest_neighbor(df):
