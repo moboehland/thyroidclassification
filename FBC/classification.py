@@ -435,14 +435,13 @@ if __name__ == '__main__':
     elif hparams.features_folder == "N":
         hparams.features_folder = features_folder_N
         hparams.diagnose_groups = diagnose_groups_N
+    # Example for custom dataset
+    # elif "Nguyen" in hparams.features_folder:
+    #     hparams.features_folder = Path(hparams.features_folder)
+    #     hparams.diagnose_groups = diagnose_groups_T  # or manual define it like {"negative": ["X", "Y"], "positive": ["Z"]}
     else:
         raise ValueError("Please manually define hparams.diagnose_groups for custom datasets (--features_folder not 'T' or 'N').")
 
     hparams.feature_selection_num_features = np.arange(1, hparams.feature_selection_num_features+1)
-
-
-    # remove:
-    hparams.quantile_transform = True
-    hparams.feature_selection_method = "sfs"
 
     main(hparams)
