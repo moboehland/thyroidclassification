@@ -18,7 +18,7 @@ def get_paths(folder, suffix):
 def data_loader(folder, split=None, patients=None):
     paths = sorted(Path(folder).glob("*.h5"))
     if paths == []:
-        ValueError(f"No measurements (features) found in {folder}")
+        raise ValueError(f"No measurements (features) found in {folder}")
     measures_all = pd.DataFrame()
     for idx, path in enumerate(paths):
         if patients is not None and not int(path.name.split("_")[0]) in patients:
@@ -40,7 +40,7 @@ def data_loader(folder, split=None, patients=None):
 
 
 def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
-                       truncate_sheet=False, header=False,
+                       truncate_sheet=False, multi_header=False,
                        **to_excel_kwargs):
     """
     Append a DataFrame [df] to existing Excel file [filename]
@@ -57,6 +57,7 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
                      in the existing DF and write to the next row...
     @param truncate_sheet: truncate (remove and recreate) [sheet_name]
                            before writing DataFrame to Excel file
+    @param multi_header: False writes no header, when the xlsx file already exists
     @param to_excel_kwargs: arguments which will be passed to `DataFrame.to_excel()`
                             [can be a dictionary]
     @return: None
@@ -75,6 +76,8 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
 
     (c) [MaxU](https://stackoverflow.com/users/5741205/maxu?tab=profile)
     """
+    if multi_header == False and os.path.isfile(filename):
+        to_excel_kwargs["header"] = None
     # Excel file doesn't exist - saving and exiting
     if not os.path.isfile(filename):
         df.to_excel(
@@ -113,8 +116,8 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
     if startrow is None:
         startrow = 0
 
-    # write out the new sheet do not write the header since it already is there when the excel is created
-    df.to_excel(writer, sheet_name, header, startrow=startrow, **to_excel_kwargs)
+    # write out the new sheet
+    df.to_excel(writer, sheet_name, startrow=startrow, **to_excel_kwargs)
 
     # save the workbook
     writer.save()
